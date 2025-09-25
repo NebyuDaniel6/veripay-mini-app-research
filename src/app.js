@@ -1,238 +1,237 @@
 /**
- * VeriPay Mini App - Main Application Logic
- * Modern ES6+ JavaScript with advanced features
+ * VeriPay Mini App - Simple Working Version
+ * Fixed UI and button functionality
  */
 
-import telegramService from './services/telegram.js';
-import { ApiService } from './services/api.js';
-import { StorageService } from './services/storage.js';
-import { formatCurrency, formatDate, formatTime } from './utils/formatters.js';
+// Simple Telegram service
+const telegramService = {
+  init() {
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+      console.log('Telegram WebApp initialized');
+    } else {
+      console.warn('Telegram WebApp not available');
+    }
+  },
 
+  getUser() {
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+      return window.Telegram.WebApp.initDataUnsafe.user;
+    }
+    return null;
+  },
+
+  sendData(data) {
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.sendData(JSON.stringify(data));
+    }
+  },
+
+  showAlert(message) {
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.showAlert(message);
+    } else {
+      alert(message);
+    }
+  }
+};
+
+// Simple formatters
+const formatters = {
+  formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'ETB',
+      minimumFractionDigits: 2
+    }).format(amount);
+  },
+
+  formatTimeAgo(timestamp) {
+    const now = Date.now();
+    const seconds = Math.round((now - timestamp) / 1000);
+    const minutes = Math.round(seconds / 60);
+    const hours = Math.round(minutes / 60);
+    const days = Math.round(hours / 24);
+
+    if (seconds < 60) return `${seconds}s ago`;
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days < 30) return `${days}d ago`;
+    return new Date(timestamp).toLocaleDateString();
+  }
+};
+
+// Main App Class
 class VeriPayApp {
   constructor() {
-    this.api = new ApiService();
-    this.storage = new StorageService();
-    this.currentView = 'main';
     this.user = null;
     this.transactions = [];
-    
     this.init();
   }
 
-  async init() {
-    try {
-      // Wait for Telegram to be ready
-      await this.waitForTelegram();
-      
-      // Initialize user data
-      await this.initializeUser();
-      
-      // Set up event listeners
-      this.setupEventListeners();
-      
-      // Load initial data
-      await this.loadInitialData();
-      
-      // Show the app
-      this.showApp();
-      
-      console.log('VeriPay App initialized successfully');
-      
-    } catch (error) {
-      console.error('Failed to initialize VeriPay App:', error);
-      this.showError('Failed to initialize app. Please try again.');
-    }
-  }
-
-  async waitForTelegram() {
-    return new Promise((resolve) => {
-      const checkTelegram = () => {
-        if (telegramService.isReady) {
-          resolve();
-        } else {
-          setTimeout(checkTelegram, 100);
-        }
-      };
-      checkTelegram();
-    });
-  }
-
-  async initializeUser() {
+  init() {
+    // Initialize Telegram
+    telegramService.init();
+    
+    // Get user data
     this.user = telegramService.getUser();
     
-    if (this.user) {
-      // Update UI with user info
-      this.updateUserInfo();
-      
-      // Store user data locally
-      this.storage.setUser(this.user);
-    } else {
-      console.warn('No user data available from Telegram');
-    }
-  }
-
-  updateUserInfo() {
-    const nameElement = document.getElementById('user-name');
-    const roleElement = document.getElementById('user-role');
-    const avatarElement = document.getElementById('user-avatar');
+    // Set up event listeners
+    this.setupEventListeners();
     
-    if (nameElement && this.user) {
-      nameElement.textContent = `Welcome, ${this.user.first_name || 'User'}!`;
-    }
+    // Update UI
+    this.updateUI();
     
-    if (roleElement) {
-      roleElement.textContent = 'Waiter'; // Default role
-    }
+    // Hide loading screen
+    this.hideLoadingScreen();
     
-    if (avatarElement && this.user?.first_name) {
-      avatarElement.textContent = this.user.first_name.charAt(0).toUpperCase();
-    }
+    console.log('VeriPay App initialized');
   }
 
   setupEventListeners() {
     // Quick action buttons
-    document.getElementById('capture-payment-btn')?.addEventListener('click', () => {
-      this.showCapturePayment();
-    });
-    
-    document.getElementById('view-transactions-btn')?.addEventListener('click', () => {
-      this.showTransactions();
-    });
-    
-    document.getElementById('upload-statement-btn')?.addEventListener('click', () => {
-      this.showUploadStatement();
-    });
-    
-    document.getElementById('analytics-btn')?.addEventListener('click', () => {
-      this.showAnalytics();
-    });
-    
-    // Navigation buttons
-    document.getElementById('view-all-btn')?.addEventListener('click', () => {
-      this.showTransactions();
-    });
-    
-    // Theme toggle
-    document.getElementById('theme-toggle')?.addEventListener('click', () => {
-      this.toggleTheme();
-    });
-    
-    // Settings
-    document.getElementById('settings-btn')?.addEventListener('click', () => {
-      this.showSettings();
-    });
-  }
+    const captureBtn = document.getElementById('capture-payment-btn');
+    const transactionsBtn = document.getElementById('view-transactions-btn');
+    const uploadBtn = document.getElementById('upload-statement-btn');
+    const analyticsBtn = document.getElementById('analytics-btn');
 
-  async loadInitialData() {
-    try {
-      // Load recent transactions
-      await this.loadRecentTransactions();
-      
-      // Load user preferences
-      this.loadUserPreferences();
-      
-    } catch (error) {
-      console.error('Failed to load initial data:', error);
+    if (captureBtn) {
+      captureBtn.addEventListener('click', () => this.handleCapturePayment());
+    }
+
+    if (transactionsBtn) {
+      transactionsBtn.addEventListener('click', () => this.handleViewTransactions());
+    }
+
+    if (uploadBtn) {
+      uploadBtn.addEventListener('click', () => this.handleUploadStatement());
+    }
+
+    if (analyticsBtn) {
+      analyticsBtn.addEventListener('click', () => this.handleAnalytics());
+    }
+
+    // Bottom navigation
+    const homeBtn = document.getElementById('home-btn');
+    const transactionsNavBtn = document.getElementById('transactions-nav-btn');
+    const profileBtn = document.getElementById('profile-btn');
+
+    if (homeBtn) {
+      homeBtn.addEventListener('click', () => this.showHome());
+    }
+
+    if (transactionsNavBtn) {
+      transactionsNavBtn.addEventListener('click', () => this.handleViewTransactions());
+    }
+
+    if (profileBtn) {
+      profileBtn.addEventListener('click', () => this.showProfile());
     }
   }
 
-  async loadRecentTransactions() {
-    try {
-      // Try to load from API first
-      const transactions = await this.api.getTransactions({ limit: 5 });
-      
-      if (transactions && transactions.length > 0) {
-        this.transactions = transactions;
-        this.renderRecentTransactions();
-      } else {
-        // Fallback to mock data for demo
-        this.loadMockTransactions();
+  updateUI() {
+    // Update user info
+    this.updateUserInfo();
+    
+    // Load sample transactions
+    this.loadSampleTransactions();
+  }
+
+  updateUserInfo() {
+    const nameElement = document.getElementById('user-name');
+    const avatarElement = document.getElementById('user-avatar');
+    
+    if (this.user) {
+      if (nameElement) {
+        nameElement.textContent = `Welcome, ${this.user.first_name || 'User'}!`;
       }
-      
-    } catch (error) {
-      console.error('Failed to load transactions:', error);
-      this.loadMockTransactions();
+      if (avatarElement) {
+        avatarElement.textContent = (this.user.first_name || 'U').charAt(0).toUpperCase();
+      }
+    } else {
+      if (nameElement) {
+        nameElement.textContent = 'Welcome back!';
+      }
+      if (avatarElement) {
+        avatarElement.textContent = 'U';
+      }
     }
   }
 
-  loadMockTransactions() {
-    // Mock data for demonstration
+  loadSampleTransactions() {
+    // Sample transactions for demo
     this.transactions = [
       {
-        id: 1,
+        id: 'tx1',
         amount: 150.00,
-        bank_name: 'CBE',
-        receipt_number: 'CBE123456789',
-        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        status: 'completed'
-      },
-      {
-        id: 2,
-        amount: 75.50,
-        bank_name: 'Telebirr',
-        receipt_number: 'TB987654321',
-        created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-        status: 'completed'
-      },
-      {
-        id: 3,
-        amount: 200.00,
         bank_name: 'Dashen Bank',
-        receipt_number: 'DB456789123',
-        created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        receipt_number: 'DB12345',
+        created_at: Date.now() - 3600000,
+        status: 'completed'
+      },
+      {
+        id: 'tx2',
+        amount: 200.50,
+        bank_name: 'CBE',
+        receipt_number: 'CBE67890',
+        created_at: Date.now() - 7200000,
+        status: 'completed'
+      },
+      {
+        id: 'tx3',
+        amount: 75.25,
+        bank_name: 'Telebirr',
+        receipt_number: 'TB11223',
+        created_at: Date.now() - 10800000,
         status: 'pending'
       }
     ];
-    
-    this.renderRecentTransactions();
+
+    this.renderTransactions();
   }
 
-  renderRecentTransactions() {
-    const container = document.getElementById('recent-transactions');
+  renderTransactions() {
+    const container = document.getElementById('transactions-container');
     if (!container) return;
-    
+
     if (this.transactions.length === 0) {
       container.innerHTML = `
-        <div class="text-center py-8 text-secondary-500">
-          <svg class="w-12 h-12 mx-auto mb-4 text-secondary-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-          </svg>
-          <p>No transactions yet</p>
-          <p class="text-sm">Start capturing payments to see them here</p>
+        <div class="text-center py-8">
+          <p class="text-gray-500">No transactions yet</p>
+          <p class="text-sm text-gray-400">Start capturing payments to see them here</p>
         </div>
       `;
       return;
     }
-    
+
     container.innerHTML = this.transactions.map(transaction => `
-      <div class="transaction-card animate-slide-up">
+      <div class="bg-white rounded-lg p-4 mb-3 shadow-sm border">
         <div class="flex items-center justify-between">
-          <div class="flex-1">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-                <span class="text-white font-semibold text-sm">${transaction.bank_name.charAt(0)}</span>
-              </div>
-              <div class="flex-1">
-                <div class="font-semibold text-secondary-900">${formatCurrency(transaction.amount)} ETB</div>
-                <div class="text-sm text-secondary-600">${transaction.bank_name}</div>
-              </div>
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+              <span class="text-white font-semibold text-sm">${transaction.bank_name.charAt(0)}</span>
+            </div>
+            <div>
+              <div class="font-semibold text-gray-900">${formatters.formatCurrency(transaction.amount)}</div>
+              <div class="text-sm text-gray-600">${transaction.bank_name}</div>
             </div>
           </div>
           <div class="text-right">
-            <div class="text-xs text-secondary-500">${formatTime(transaction.created_at)}</div>
-            <div class="status-indicator ${transaction.status === 'completed' ? 'status-success' : 'status-pending'}">
+            <div class="text-xs text-gray-500">${formatters.formatTimeAgo(transaction.created_at)}</div>
+            <div class="text-xs ${transaction.status === 'completed' ? 'text-green-600' : 'text-yellow-600'}">
               ${transaction.status}
             </div>
           </div>
         </div>
-        <div class="mt-2 text-xs text-secondary-500">
+        <div class="mt-2 text-xs text-gray-500">
           Ref: ${transaction.receipt_number}
         </div>
       </div>
     `).join('');
   }
 
-  showApp() {
+  hideLoadingScreen() {
     const loadingScreen = document.getElementById('loading-screen');
     const app = document.getElementById('app');
     
@@ -245,133 +244,55 @@ class VeriPayApp {
     }
   }
 
-  showCapturePayment() {
-    telegramService.impactOccurred('medium');
-    
-    // Send data to bot
+  // Button handlers
+  handleCapturePayment() {
+    console.log('Capture payment clicked');
     telegramService.sendData({
       action: 'capture_payment',
       user_id: this.user?.id
     });
-    
-    // Show confirmation
-    this.showToast('Opening payment capture...', 'info');
+    telegramService.showAlert('Opening payment capture...');
   }
 
-  showTransactions() {
-    telegramService.impactOccurred('light');
-    this.currentView = 'transactions';
-    
-    // Send data to bot
+  handleViewTransactions() {
+    console.log('View transactions clicked');
     telegramService.sendData({
       action: 'view_transactions',
       user_id: this.user?.id
     });
-    
-    // Show confirmation
-    this.showToast('Loading transactions...', 'info');
+    telegramService.showAlert('Loading transactions...');
   }
 
-  showUploadStatement() {
-    telegramService.impactOccurred('medium');
-    
-    // Send data to bot
+  handleUploadStatement() {
+    console.log('Upload statement clicked');
     telegramService.sendData({
       action: 'upload_statement',
       user_id: this.user?.id
     });
-    
-    // Show confirmation
-    this.showToast('Opening statement upload...', 'info');
+    telegramService.showAlert('Opening statement upload...');
   }
 
-  showAnalytics() {
-    telegramService.impactOccurred('light');
-    
-    // Send data to bot
-    telegramService.sendData({
-      action: 'view_analytics',
-      user_id: this.user?.id
-    });
-    
-    // Show confirmation
-    this.showToast('Loading analytics...', 'info');
+  handleAnalytics() {
+    console.log('Analytics clicked');
+    window.location.href = 'analytics.html';
   }
 
-  showSettings() {
-    telegramService.impactOccurred('light');
-    
-    // Show settings popup
-    telegramService.showPopup({
-      title: 'Settings',
-      message: 'Settings panel coming soon!',
-      buttons: [
-        { id: 'ok', type: 'default', text: 'OK' }
-      ]
-    });
+  showHome() {
+    console.log('Home clicked');
+    // Reset to main view
+    this.updateUI();
   }
 
-  toggleTheme() {
-    telegramService.impactOccurred('light');
-    
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    document.documentElement.setAttribute('data-theme', newTheme);
-    this.storage.setTheme(newTheme);
-    
-    this.showToast(`Switched to ${newTheme} theme`, 'success');
-  }
-
-  loadUserPreferences() {
-    const theme = this.storage.getTheme();
-    if (theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-    }
-  }
-
-  showToast(message, type = 'info') {
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = `fixed top-20 left-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-y-0 opacity-100`;
-    
-    const colors = {
-      success: 'bg-green-500 text-white',
-      error: 'bg-red-500 text-white',
-      warning: 'bg-yellow-500 text-white',
-      info: 'bg-blue-500 text-white'
-    };
-    
-    toast.className += ` ${colors[type] || colors.info}`;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    // Auto remove after 3 seconds
-    setTimeout(() => {
-      toast.style.transform = 'translateY(-100px)';
-      toast.style.opacity = '0';
-      setTimeout(() => {
-        document.body.removeChild(toast);
-      }, 300);
-    }, 3000);
-  }
-
-  showError(message) {
-    this.showToast(message, 'error');
-  }
-
-  showMainView() {
-    this.currentView = 'main';
-    telegramService.hideBackButton();
-    telegramService.hideMainButton();
+  showProfile() {
+    console.log('Profile clicked');
+    telegramService.showAlert('Profile feature coming soon!');
   }
 }
 
-// Initialize app when DOM is ready
+// Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  window.veriPayApp = new VeriPayApp();
+  new VeriPayApp();
 });
 
-// Export for modules
-export default VeriPayApp;
+// Export for modules (if needed)
+window.VeriPayApp = VeriPayApp;
