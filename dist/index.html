@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeriPay - Futuristic Payment Verification</title>
+    <meta name="description" content="Advanced payment verification system with modern UI">
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Preload critical resources -->
+    
+    <link rel="preload" href="/assets/telegram-e5b65350.js" as="script">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/veripay-icon.svg">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    
+    
+    <!-- Theme detection -->
+    <script>
+        // Detect Telegram theme
+        if (window.Telegram && window.Telegram.WebApp) {
+            const theme = window.Telegram.WebApp.colorScheme;
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+    </script>
+  <script type="module" crossorigin src="/assets/main-d679657b.js"></script>
+  <link rel="stylesheet" href="/assets/main-b356d3dd.css">
+</head>
+<body class="bg-gradient-to-br from-primary-50 to-secondary-100 min-h-screen">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-secondary-600 font-medium">Loading VeriPay...</p>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app" class="min-h-screen opacity-0 transition-opacity duration-500">
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-md border-b border-secondary-200 sticky top-0 z-40">
+            <div class="max-w-md mx-auto px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-sm">V</span>
+                        </div>
+                        <h1 class="text-xl font-semibold text-secondary-900">VeriPay</h1>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button id="theme-toggle" class="p-2 rounded-lg hover:bg-secondary-100 transition-colors">
+                            <svg class="w-5 h-5 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                        </button>
+                        <button id="settings-btn" class="p-2 rounded-lg hover:bg-secondary-100 transition-colors">
+                            <svg class="w-5 h-5 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-md mx-auto px-4 py-6">
+            <!-- User Info Card -->
+            <div id="user-info-card" class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-white/20 shadow-lg">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+                        <span id="user-avatar" class="text-white font-semibold text-lg">U</span>
+                    </div>
+                    <div class="flex-1">
+                        <h2 id="user-name" class="text-lg font-semibold text-secondary-900">Welcome back!</h2>
+                        <p id="user-role" class="text-sm text-secondary-600">Loading user info...</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-secondary-500">Status</div>
+                        <div id="user-status" class="text-sm font-medium text-green-600">● Online</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Grid -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <button id="capture-payment-btn" class="bg-gradient-to-r from-primary-500 to-primary-600 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="text-center">
+                        <div class="w-8 h-8 mx-auto mb-2">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="font-semibold">Capture</div>
+                        <div class="text-xs opacity-90">Payment</div>
+                    </div>
+                </button>
+
+                <button id="view-transactions-btn" class="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="text-center">
+                        <div class="w-8 h-8 mx-auto mb-2">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <div class="font-semibold">View</div>
+                        <div class="text-xs opacity-90">Transactions</div>
+                    </div>
+                </button>
+
+                <button id="upload-statement-btn" class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="text-center">
+                        <div class="w-8 h-8 mx-auto mb-2">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                        </div>
+                        <div class="font-semibold">Upload</div>
+                        <div class="text-xs opacity-90">Statement</div>
+                    </div>
+                </button>
+
+                <button id="analytics-btn" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="text-center">
+                        <div class="w-8 h-8 mx-auto mb-2">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <div class="font-semibold">Analytics</div>
+                        <div class="text-xs opacity-90">Reports</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-secondary-900">Recent Transactions</h3>
+                    <button id="view-all-btn" class="text-primary-600 text-sm font-medium hover:text-primary-700">View All</button>
+                </div>
+                <div id="recent-transactions" class="space-y-3">
+                    <!-- Transactions will be loaded here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-secondary-200">
+            <div class="max-w-md mx-auto px-4 py-2">
+                <div class="flex items-center justify-around">
+                    <button class="flex flex-col items-center py-2 px-3 text-primary-600">
+                        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                        <span class="text-xs font-medium">Home</span>
+                    </button>
+                    <button class="flex flex-col items-center py-2 px-3 text-secondary-400">
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        <span class="text-xs">Transactions</span>
+                    </button>
+                    <button class="flex flex-col items-center py-2 px-3 text-secondary-400">
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <span class="text-xs">Profile</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Scripts -->
+    
+    
+</body>
+</html>
